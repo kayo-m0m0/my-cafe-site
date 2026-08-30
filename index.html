@@ -88,11 +88,11 @@
 
   <div class="container">
     
-    <!-- ★お知らせコーナー（ここにNotionのデータを自動表示させます） -->
+    <!-- ★お知らせコーナー -->
     <section>
       <h2>📢 お知らせ</h2>
       <ul class="news-list" id="news-container">
-        <li class="news-item">読み込み中...（連携後にNotionのお知らせが表示されます）</li>
+        <li class="news-item">読み込み中...</li>
       </ul>
     </section>
 
@@ -140,21 +140,41 @@
         const data = await response.json();
         
         const newsContainer = document.getElementById("news-container");
-        newsContainer.innerHTML = ""; // 「読み込み中...」を消去
+        newsContainer.innerHTML = "";
 
         if (data && data.length > 0) {
           data.forEach(item => {
-            const title = item["タイトル"] || item["Name"] || "お知らせ";
-            const li = document.createElement("li");
-            li.className = "news-item";
-            li.textContent = title;
-            newsContainer.appendChild(li);
+            let titleText = "";
+            
+            // Notionのプロパティ構造からタイトル文字列を抽出
+            const props = item.properties || item.Properties || item;
+            const titleProp = props["タイトル"] || props["名前"] || props["Name"] || props["title"];
+
+            if (titleProp) {
+              if (titleProp.title && titleProp.title.length > 0) {
+                titleText = titleProp.title[0].plain_text || titleProp.title[0].text?.content;
+              } else if (typeof titleProp === "string") {
+                titleText = titleProp;
+              }
+            }
+
+            if (titleText) {
+              const li = document.createElement("li");
+              li.className = "news-item";
+              li.textContent = titleText;
+              newsContainer.appendChild(li);
+            }
           });
+
+          if (newsContainer.children.length === 0) {
+            newsContainer.innerHTML = '<li class="news-item">現在お知らせはありません。</li>';
+          }
         } else {
           newsContainer.innerHTML = '<li class="news-item">現在お知らせはありません。</li>';
         }
       } catch (error) {
         console.error("エラー:", error);
+        document.getElementById("news-container").innerHTML = '<li class="news-item">お知らせの読み込みに失敗しました。</li>';
       }
     }
 
