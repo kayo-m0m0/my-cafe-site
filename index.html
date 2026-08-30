@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カフェ・ルポ | Cafe Repos</title>
   <style>
-    /* ほっこり温かみのあるデザイン */
     body {
       font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
       margin: 0;
@@ -128,36 +127,21 @@
   </footer>
 
   <script>
-    // 深い階層から再帰的にテキストを探し出す関数
-    function findTitleText(obj) {
-      if (!obj) return "";
-      if (typeof obj === "string") return obj;
-      
-      // Notion特有の plain_text を探す
-      if (obj.plain_text) return obj.plain_text;
-      
-      if (Array.isArray(obj)) {
-        for (let item of obj) {
-          let res = findTitleText(item);
-          if (res) return res;
-        }
-      } else if (typeof obj === "object") {
-        // properties内の「タイトル」「名前」「Name」「title」を優先捜索
-        if (obj.properties) {
-          const props = obj.properties;
-          const target = props["タイトル"] || props["名前"] || props["Name"] || props["title"];
-          if (target) {
-            let res = findTitleText(target);
-            if (res) return res;
+    // Notionのタイトルテキストだけをピンポイントで抽出する関数
+    function extractTitle(item) {
+      try {
+        if (item.properties) {
+          const props = item.properties;
+          // 「タイトル」または「Name」「名前」「title」から抽出
+          const titleObj = props["タイトル"] || props["Name"] || props["名前"] || props["title"];
+          if (titleObj && titleObj.title && titleObj.title.length > 0) {
+            return titleObj.title[0].plain_text || titleObj.title[0].text.content;
           }
         }
-        for (let key in obj) {
-          if (key === "url" || key === "id") continue; // 不要なプロパティをスキップ
-          let res = findTitleText(obj[key]);
-          if (res) return res;
-        }
+      } catch (e) {
+        console.error("タイトル抽出失敗:", e);
       }
-      return "";
+      return null;
     }
 
     async function fetchNotionData() {
@@ -170,24 +154,18 @@
         
         newsContainer.innerHTML = "";
 
-        if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+        if (data) {
           const items = Array.isArray(data) ? data : [data];
           let count = 0;
 
           items.forEach(item => {
-            // ステータスチェック（「公開」が含まれているか、またはチェックなしの場合）
-            const itemStr = JSON.stringify(item);
-            
-            // 「公開」状態のデータのみ表示（または全件表示）
-            if (itemStr.includes("公開") || !itemStr.includes("下書き")) {
-              let title = findTitleText(item);
-              if (title && title !== "公開" && title !== "下書き" && title !== "お知らせ") {
-                const li = document.createElement("li");
-                li.className = "news-item";
-                li.textContent = title;
-                newsContainer.appendChild(li);
-                count++;
-              }
+            const title = extractTitle(item);
+            if (title) {
+              const li = document.createElement("li");
+              li.className = "news-item";
+              li.textContent = title;
+              newsContainer.appendChild(li);
+              count++;
             }
           });
 
