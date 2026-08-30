@@ -131,5 +131,35 @@
     <p>&copy; Cafe Repos All Rights Reserved.</p>
   </footer>
 
+  <script>
+    async function fetchNotionData() {
+      const webhookUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
+
+      try {
+        const response = await fetch(webhookUrl);
+        const data = await response.json();
+        
+        const newsContainer = document.getElementById("news-container");
+        newsContainer.innerHTML = ""; // 「読み込み中...」を消去
+
+        if (data && data.length > 0) {
+          data.forEach(item => {
+            const title = item["タイトル"] || item["Name"] || "お知らせ";
+            const li = document.createElement("li");
+            li.className = "news-item";
+            li.textContent = title;
+            newsContainer.appendChild(li);
+          });
+        } else {
+          newsContainer.innerHTML = '<li class="news-item">現在お知らせはありません。</li>';
+        }
+      } catch (error) {
+        console.error("エラー:", error);
+      }
+    }
+
+    fetchNotionData();
+  </script>
+
 </body>
 </html>
