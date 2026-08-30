@@ -1,134 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>カフェ・ルポ | Cafe Repos</title>
-  <style>
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #fdfbf7;
-      color: #4a4238;
-      line-height: 1.6;
-    }
-    header {
-      background-color: #e8d8c8;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 2.2rem;
-      color: #5c4033;
-    }
-    .subtitle {
-      font-size: 0.9rem;
-      color: #8c7b70;
-      margin-top: 5px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    section {
-      background: #ffffff;
-      margin-bottom: 25px;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-    }
-    h2 {
-      color: #8b5a2b;
-      border-bottom: 2px solid #f2e6d8;
-      padding-bottom: 8px;
-      margin-top: 0;
-      font-size: 1.3rem;
-    }
-    .news-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .news-item {
-      padding: 10px 0;
-      border-bottom: 1px dashed #e8d8c8;
-    }
-    .news-item:last-child {
-      border-bottom: none;
-    }
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-    }
-    .menu-card {
-      background: #fdfbf7;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid #f0e6d9;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.8rem;
-      color: #8c7b70;
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1>カフェ・ルポ</h1>
-    <div class="subtitle">心ほぐれる、手作り珈琲と焼き菓子の店</div>
-  </header>
-
-  <div class="container">
-    
-    <section>
-      <h2>📢 お知らせ</h2>
-      <ul class="news-list" id="news-container">
-        <li class="news-item">読み込み中...</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>🕒 営業時間</h2>
-      <p><strong>営業時間：</strong>11:00 〜 18:00 (L.O. 17:30)</p>
-      <p><strong>定休日：</strong>水曜日・第2火曜日</p>
-    </section>
-
-    <section>
-      <h2>☕ メニュー例</h2>
-      <div class="menu-grid">
-        <div class="menu-card">
-          <h3>ルポブレンド</h3>
-          <p>深煎りでコクのある、店主こだわりのブレンドコーヒー。</p>
-        </div>
-        <div class="menu-card">
-          <h3>自家製シフォンケーキ</h3>
-          <p>ふわふわ食感の優しい甘さのプレーンシフォン。</p>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2>📍 アクセス</h2>
-      <p>〒123-0045 東京都◯◯区◯◯町 1-2-3</p>
-      <p>◯◯駅 徒歩5分（緑の看板が目印です）</p>
-    </section>
-
-  </div>
-
-  <footer>
-    <p>&copy; Cafe Repos All Rights Reserved.</p>
-  </footer>
-
-  <script>
+<script>
     async function fetchNotionData() {
-      const webhookUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
+      // CORSプロキシをURLの頭に挟むことで、ブラウザからのブロックを回避します
+      const targetUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
+      const webhookUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
+      
       const newsContainer = document.getElementById("news-container");
 
       try {
@@ -137,12 +12,10 @@
         
         newsContainer.innerHTML = "";
 
-        // Makeから届いた配列データを取り出す
         const items = data.items || [];
         let count = 0;
 
         for (const item of items) {
-          // タイトル（plain_text）の項目を取り出す
           const val = item.title?.[0]?.plain_text || item.plain_text;
           
           if (val && val !== "公開" && val !== "下書き") {
@@ -165,6 +38,3 @@
 
     fetchNotionData();
   </script>
-
-</body>
-</html>
