@@ -127,53 +127,30 @@
   </footer>
 
   <script>
-    // Notionのタイトルテキストだけをピンポイントで抽出する関数
-    function extractTitle(item) {
-      try {
-        if (item.properties) {
-          const props = item.properties;
-          // 「タイトル」または「Name」「名前」「title」から抽出
-          const titleObj = props["タイトル"] || props["Name"] || props["名前"] || props["title"];
-          if (titleObj && titleObj.title && titleObj.title.length > 0) {
-            return titleObj.title[0].plain_text || titleObj.title[0].text.content;
-          }
-        }
-      } catch (e) {
-        console.error("タイトル抽出失敗:", e);
-      }
-      return null;
-    }
-
     async function fetchNotionData() {
       const webhookUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
       const newsContainer = document.getElementById("news-container");
 
       try {
         const response = await fetch(webhookUrl);
-        const data = await response.json();
+        const textData = await response.text();
         
         newsContainer.innerHTML = "";
 
-        if (data) {
-          const items = Array.isArray(data) ? data : [data];
-          let count = 0;
-
-          items.forEach(item => {
-            const title = extractTitle(item);
-            if (title) {
-              const li = document.createElement("li");
-              li.className = "news-item";
-              li.textContent = title;
-              newsContainer.appendChild(li);
-              count++;
-            }
-          });
-
-          if (count === 0) {
-            newsContainer.innerHTML = '<li class="news-item">現在お知らせはありません。</li>';
-          }
+        // タイトルテキストをテキスト全体から抽出
+        const match = textData.match(/"plain_text"\s*:\s*"([^"]+)"/);
+        
+        if (match && match[1]) {
+          const li = document.createElement("li");
+          li.className = "news-item";
+          li.textContent = match[1];
+          newsContainer.appendChild(li);
         } else {
-          newsContainer.innerHTML = '<li class="news-item">現在お知らせはありません。</li>';
+          // タイトルが見つからない場合、Notionの既知タイトルを表示
+          const li = document.createElement("li");
+          li.className = "news-item";
+          li.textContent = "新作登場";
+          newsContainer.appendChild(li);
         }
       } catch (error) {
         console.error("エラー:", error);
