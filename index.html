@@ -88,7 +88,6 @@
 
   <div class="container">
     
-    <!-- ★お知らせコーナー -->
     <section>
       <h2>📢 お知らせ</h2>
       <ul class="news-list" id="news-container">
@@ -96,14 +95,12 @@
       </ul>
     </section>
 
-    <!-- 営業時間 -->
     <section>
       <h2>🕒 営業時間</h2>
       <p><strong>営業時間：</strong>11:00 〜 18:00 (L.O. 17:30)</p>
       <p><strong>定休日：</strong>水曜日・第2火曜日</p>
     </section>
 
-    <!-- メニュー例 -->
     <section>
       <h2>☕ メニュー例</h2>
       <div class="menu-grid">
@@ -118,7 +115,6 @@
       </div>
     </section>
 
-    <!-- アクセス -->
     <section>
       <h2>📍 アクセス</h2>
       <p>〒123-0045 東京都◯◯区◯◯町 1-2-3</p>
@@ -132,41 +128,70 @@
   </footer>
 
   <script>
+    // 深い階層から再帰的にテキストを探し出す関数
+    function findTitleText(obj) {
+      if (!obj) return "";
+      if (typeof obj === "string") return obj;
+      
+      // Notion特有の plain_text を探す
+      if (obj.plain_text) return obj.plain_text;
+      
+      if (Array.isArray(obj)) {
+        for (let item of obj) {
+          let res = findTitleText(item);
+          if (res) return res;
+        }
+      } else if (typeof obj === "object") {
+        // properties内の「タイトル」「名前」「Name」「title」を優先捜索
+        if (obj.properties) {
+          const props = obj.properties;
+          const target = props["タイトル"] || props["名前"] || props["Name"] || props["title"];
+          if (target) {
+            let res = findTitleText(target);
+            if (res) return res;
+          }
+        }
+        for (let key in obj) {
+          if (key === "url" || key === "id") continue; // 不要なプロパティをスキップ
+          let res = findTitleText(obj[key]);
+          if (res) return res;
+        }
+      }
+      return "";
+    }
+
     async function fetchNotionData() {
       const webhookUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
+      const newsContainer = document.getElementById("news-container");
 
       try {
         const response = await fetch(webhookUrl);
         const data = await response.json();
         
-        const newsContainer = document.getElementById("news-container");
         newsContainer.innerHTML = "";
 
-        if (data && data.length > 0) {
-          data.forEach(item => {
-            let titleText = "";
+        if (data && (Array.isArray(data) ? data.length > 0 : Object.keys(data).length > 0)) {
+          const items = Array.isArray(data) ? data : [data];
+          let count = 0;
+
+          items.forEach(item => {
+            // ステータスチェック（「公開」が含まれているか、またはチェックなしの場合）
+            const itemStr = JSON.stringify(item);
             
-            // Notionのプロパティ構造からタイトル文字列を抽出
-            const props = item.properties || item.Properties || item;
-            const titleProp = props["タイトル"] || props["名前"] || props["Name"] || props["title"];
-
-            if (titleProp) {
-              if (titleProp.title && titleProp.title.length > 0) {
-                titleText = titleProp.title[0].plain_text || titleProp.title[0].text?.content;
-              } else if (typeof titleProp === "string") {
-                titleText = titleProp;
+            // 「公開」状態のデータのみ表示（または全件表示）
+            if (itemStr.includes("公開") || !itemStr.includes("下書き")) {
+              let title = findTitleText(item);
+              if (title && title !== "公開" && title !== "下書き" && title !== "お知らせ") {
+                const li = document.createElement("li");
+                li.className = "news-item";
+                li.textContent = title;
+                newsContainer.appendChild(li);
+                count++;
               }
-            }
-
-            if (titleText) {
-              const li = document.createElement("li");
-              li.className = "news-item";
-              li.textContent = titleText;
-              newsContainer.appendChild(li);
             }
           });
 
-          if (newsContainer.children.length === 0) {
+          if (count === 0) {
             newsContainer.innerHTML = '<li class="news-item">現在お知らせはありません。</li>';
           }
         } else {
@@ -174,7 +199,7 @@
         }
       } catch (error) {
         console.error("エラー:", error);
-        document.getElementById("news-container").innerHTML = '<li class="news-item">お知らせの読み込みに失敗しました。</li>';
+        newsContainer.innerHTML = '<li class="news-item">お知らせの読み込みに失敗しました。</li>';
       }
     }
 
