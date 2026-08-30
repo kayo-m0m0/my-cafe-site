@@ -1,9 +1,7 @@
 <script>
     async function fetchNotionData() {
-      // CORSプロキシをURLの頭に挟むことで、ブラウザからのブロックを回避します
-      const targetUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
-      const webhookUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
-      
+      // プロキシを外し、MakeのWebhookへ直接アクセスします
+      const webhookUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
       const newsContainer = document.getElementById("news-container");
 
       try {
