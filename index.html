@@ -133,21 +133,19 @@
 
       try {
         const response = await fetch(webhookUrl);
-        const textData = await response.text();
+        const data = await response.json();
         
         newsContainer.innerHTML = "";
 
-        // テキストデータの中からタイトルの項目（plain_text）をすべて抽出する
-        const matches = [...textData.matchAll(/"plain_text"\s*:\s*"([^"]+)"/g)];
-        
-        const added = new Set();
+        // Makeから届いた配列データを取り出す
+        const items = data.items || [];
         let count = 0;
 
-        for (const match of matches) {
-          const val = match[1];
-          // 「公開」などのステータス名やシステム用の値、重複しているものはスキップ
-          if (val && val !== "公開" && val !== "下書き" && val !== "page" && !added.has(val)) {
-            added.add(val);
+        for (const item of items) {
+          // タイトル（plain_text）の項目を取り出す
+          const val = item.title?.[0]?.plain_text || item.plain_text;
+          
+          if (val && val !== "公開" && val !== "下書き") {
             const li = document.createElement("li");
             li.className = "news-item";
             li.textContent = val;
