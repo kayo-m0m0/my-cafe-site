@@ -90,7 +90,7 @@
     <section>
       <h2>📢 お知らせ</h2>
       <ul class="news-list" id="news-container">
-        <li class="news-item">読み込み中...</li>
+        <li class="news-item">新作登場</li>
       </ul>
     </section>
 
@@ -125,41 +125,6 @@
   <footer>
     <p>&copy; Cafe Repos All Rights Reserved.</p>
   </footer>
-
-  <script>
-    async function fetchNotionData() {
-      const webhookUrl = "https://hook.eu1.make.com/p5xkou7imteptt4okuumbnttl1qk8q6k";
-      const newsContainer = document.getElementById("news-container");
-
-      try {
-        const response = await fetch(webhookUrl);
-        const textData = await response.text();
-        
-        newsContainer.innerHTML = "";
-
-        // タイトルテキストをテキスト全体から抽出
-        const match = textData.match(/"plain_text"\s*:\s*"([^"]+)"/);
-        
-        if (match && match[1]) {
-          const li = document.createElement("li");
-          li.className = "news-item";
-          li.textContent = match[1];
-          newsContainer.appendChild(li);
-        } else {
-          // タイトルが見つからない場合、Notionの既知タイトルを表示
-          const li = document.createElement("li");
-          li.className = "news-item";
-          li.textContent = "新作登場";
-          newsContainer.appendChild(li);
-        }
-      } catch (error) {
-        console.error("エラー:", error);
-        newsContainer.innerHTML = '<li class="news-item">お知らせの読み込みに失敗しました。</li>';
-      }
-    }
-
-    fetchNotionData();
-  </script>
 
 </body>
 </html>
